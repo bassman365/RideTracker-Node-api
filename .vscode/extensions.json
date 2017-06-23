@@ -1,0 +1,18 @@
+{
+	// See http://go.microsoft.com/fwlink/?LinkId=827846
+	// for the documentation about the extensions.json format
+	"recommendations": [
+		// Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+		"EditorConfig.EditorConfig",
+    "abusaidm.html-snippets",
+    "christian-kohler.npm-intellisense",
+    "christian-kohler.path-intellisense",
+    "dbaeumer.vscode-eslint",
+    "donjayamanne.githistory",
+    "eg2.vscode-npm-script",
+    "formulahendry.auto-close-tag",
+    "robertohuertasm.vscode-icons",
+    "xabikos.JavaScriptSnippets",
+    "xabikos.ReactSnippets"
+	]
+}
