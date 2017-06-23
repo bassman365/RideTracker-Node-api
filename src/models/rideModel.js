@@ -12,8 +12,8 @@ const rideModel = new Schema({
   calories: { type: Number },
   notes: { type: String }
 },
-  {
-    timestamps: true
-  });
+{
+  timestamps: true
+});
 
 module.exports = mongoose.model('Ride', rideModel);
