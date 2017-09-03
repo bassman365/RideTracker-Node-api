@@ -29,7 +29,7 @@ const userController = (User) => {
   // create a sample user
 
     const saltRounds = 10;
-    const userProvidedPassword = 'password';
+    const userProvidedPassword = 'abc123';
     bcrypt.hash(userProvidedPassword, saltRounds, function(err, hash) {
       var testUser = new User({
         name: 'Test User',
