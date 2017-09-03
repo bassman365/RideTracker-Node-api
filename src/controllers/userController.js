@@ -31,14 +31,14 @@ const userController = (User) => {
     const saltRounds = 10;
     const userProvidedPassword = 'password';
     bcrypt.hash(userProvidedPassword, saltRounds, function(err, hash) {
-      var nick = new User({
+      var testUser = new User({
         name: 'Test User',
         password: hash,
         admin: true
       });
 
       // save the sample user
-      nick.save(function(err) {
+      testUser.save(function(err) {
         if (err) throw err;
 
         console.log('User saved successfully');
