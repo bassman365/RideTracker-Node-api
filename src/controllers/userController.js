@@ -32,7 +32,7 @@ const userController = (User) => {
     const userProvidedPassword = 'password';
     bcrypt.hash(userProvidedPassword, saltRounds, function(err, hash) {
       var nick = new User({
-        name: 'Nick Cerminara',
+        name: 'Test User',
         password: hash,
         admin: true
       });
