@@ -60,3 +60,4 @@ typings/
 
 *.map
 dist/
+src/config.js
