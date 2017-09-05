@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const config = require('../config');
 
 const authController = (User) => {
-
   const post = ((req, res) => {
     User.findOne({
       name: req.body.name
@@ -18,6 +17,7 @@ const authController = (User) => {
         bcrypt.compare(req.body.password, user.password, function (err, hash) {
           if (err) throw err;
           //TODO handle err better
+          //TODO use async for better peformance
           const passwordsMatch = hash;
           if (!passwordsMatch) {
             res.json({ success: false, message: 'Authentication failed. Wrong password.' });

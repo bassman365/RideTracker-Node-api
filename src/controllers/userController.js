@@ -31,6 +31,7 @@ const userController = (User) => {
     const saltRounds = 10;
     const userProvidedPassword = 'abc123';
     bcrypt.hash(userProvidedPassword, saltRounds, function(err, hash) {
+      //TODO use async for better peformance
       var testUser = new User({
         name: 'Test User',
         password: hash,

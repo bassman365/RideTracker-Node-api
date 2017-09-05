@@ -1,12 +1,6 @@
 'use strict';
 const validators = require('../validators/rideValidator');
-
-const getErrorList = function (errors) {
-  const returnMessage = errors.map((error) => {
-    return error.message;
-  });
-  return returnMessage.join(', ');
-};
+const validatorHelper = require('../validators/validatorHelper');
 
 const rideController = (Ride) => {
   const post = ((req, res) => {
@@ -14,7 +8,7 @@ const rideController = (Ride) => {
     const errors = validators.validatePostRide(req.body);
     if (errors.length > 0) {
       res.status(400);
-      res.send(getErrorList(errors));
+      res.send(validatorHelper.getErrorList(errors));
     } else {
       ride.save();
       console.log(ride);
@@ -34,8 +28,8 @@ const rideController = (Ride) => {
         res.send(err);
       } else {
         let returnRides = [];
-        rides.forEach((element, index, array) => {
-          let newRide = element.toJSON();
+        rides.forEach((ride) => {
+          let newRide = ride.toJSON();
           newRide.links = {};
           newRide.links.self = 'http://' + req.headers.host + '/api/rides/' + newRide._id;
           returnRides.push(newRide);
