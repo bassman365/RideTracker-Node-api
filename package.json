@@ -2,28 +2,26 @@
   "name": "rideapi",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "mocha --reporter nyan \"src/tests/*.test.js\"",
-    "debug": "node --inspect --debug-brk dist/app.js",
-    "build": "babel src -d dist --source-maps",
-    "dev": "nodemon --exec babel-node src/app.js",
-    "prestart": "babel src --out-dir dist",
-    "start": "node dist/app.js"
+    "debug": "nodemon --debug src/app.js",
+    "dev": "node --inspect --debug-brk src/app.js",
+    "start": "nodemon src/app.js"
   },
-  "author": "",
+  "author": "matt",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^1.0.3",
     "body-parser": "^1.17.2",
     "express": "^4.15.4",
+    "express-validator": "^4.2.0",
     "jsonwebtoken": "^7.4.3",
     "mongoose": "^4.11.9",
-    "morgan": "^1.8.2"
+    "morgan": "^1.8.2",
+    "nodemailer": "^4.1.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.23.0",
-    "babel-preset-es2015": "^6.22.0",
     "eslint": "^4.0.0",
     "mocha": "^3.2.0",
     "nodemon": "^1.11.0",

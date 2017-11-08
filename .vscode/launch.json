@@ -1,7 +1,17 @@
 {
 	"version": "0.1.0",
 	"configurations": [
-
+    {
+      "name": "node",
+      "type": "node",
+      "request": "attach",
+      "port":5858,
+      "address": "localhost",
+      "restart": true,
+      "sourceMaps": false,
+      "localRoot": "${workspaceRoot}",
+      "remoteRoot": null
+    },
     {
       "type": "node",
       "request": "launch",

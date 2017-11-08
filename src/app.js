@@ -9,7 +9,7 @@ const Messages =    require('./common/messages');
 const morgan =      require('morgan');
 const middleware =  require('./common/middleware');
 const config =      require('./config');
-//mongoose.Promise = global.Promise;
+mongoose.Promise = global.Promise;
 
 //the ride db will be created if it does not currently exist
 mongoose.connect(config.database, { useMongoClient: true });
@@ -21,16 +21,14 @@ let authRouter = authRoutes();
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-app.use('/api/authenticate', authRouter);
 app.use(morgan('dev'));
-const apiRoutes = express.Router();
-
-apiRoutes.use(middleware.tokenIsValid);
-
-app.use('/api', apiRoutes);
-
-app.use('/api/rides', rideRouter);
+app.use('/api/authenticate', authRouter);
 app.use('/api/users', userRouter);
+
+const apiRoutes = express.Router();
+apiRoutes.use(middleware.tokenIsValid);
+app.use('/api', apiRoutes);
+app.use('/api/rides', rideRouter);
 
 app.get('/', (req, res) => {
   res.send(Messages.API_WELCOME);

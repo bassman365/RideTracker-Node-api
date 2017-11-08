@@ -5,31 +5,41 @@ const config = require('../config');
 
 const authController = (User) => {
   const post = ((req, res) => {
+
     User.findOne({
-      name: req.body.name
+      email: req.body.email
     }, function (err, user) {
 
       if (err) throw err;
 
       if (!user) {
-        res.json({ success: false, message: 'Authentication failed. User not found.' });
+        res.status(401);
+        res.json({ success: false, message: 'Authentication failed. Invalid email or password.' });
       } else if (user) {
-        bcrypt.compare(req.body.password, user.password, function (err, hash) {
-          if (err) throw err;
-          //TODO handle err better
-          //TODO use async for better peformance
-          const passwordsMatch = hash;
+        bcrypt.compare(req.body.password, user.password).then(function (result) {
+          const passwordsMatch = result;
           if (!passwordsMatch) {
-            res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+            res.status(401);
+            res.json({
+              success: false,
+              message: 'Authentication failed. Invalid email or password.'
+            });
           } else {
-            // if user is found and password is right
-            // create a token
+            // Make sure the user has been verified
+            if (!user.isVerified) {
+              return res.status(401).send({
+                type: 'not-verified',
+                success: false,
+                message: 'Your account has not been verified.'
+              });
+            }
+
             const payload = {
               isAdmin: user.admin,
               name: user.name
             };
             const token = jwt.sign(payload, config.secret, {
-              expiresIn: '24h' // expires in 24 hours
+              expiresIn: '24h'
             });
 
             // return the information including token as JSON
@@ -39,6 +49,9 @@ const authController = (User) => {
               token: token
             });
           }
+        }).catch(function (resultErr) {
+          console.log(resultErr);
+          //TODO handle error
         });
       }
     });
