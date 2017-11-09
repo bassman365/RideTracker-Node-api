@@ -8,6 +8,42 @@ const messages = require('../common/messages');
 const config = require('../config');
 
 const userController = (User) => {
+  const sendVerificationEmail = ((req, res, user) => {
+    // Create a verification token for this user
+    const verificationToken = new VerificationToken({
+      _userId: user._id,
+      token: crypto.randomBytes(16).toString('hex')
+    });
+
+    // Save the verification token
+    verificationToken.save(function (err) {
+      if (err) { return res.status(500).send({ message: err.message }); }
+
+      const transporter = nodemailer.createTransport({
+        host: config.nodeMailerOptions.host,
+        port: config.nodeMailerOptions.port,
+        secure: config.nodeMailerOptions.secure,
+        auth: {
+          user: config.nodeMailerOptions.auth.user,
+          pass: config.nodeMailerOptions.auth.pass
+        }
+      });
+
+      const mailOptions = {
+        from: config.verificationEmailOptions.from,
+        to: user.email,
+        subject: config.verificationEmailOptions.subject,
+        text: config.verificationEmailOptions.emailBody(req.headers.host, verificationToken.token)
+      };
+
+      transporter.sendMail(mailOptions, function (err) {
+        if (err) {
+          return res.status(500).send({ message: err.message });
+        }
+        res.status(200).send(`A verification email has been sent to ${user.email}.`);
+      });
+    });
+  });
 
   const getUsers = ((req, res) => {
     const query = {};
@@ -39,6 +75,7 @@ const userController = (User) => {
 
       user = new User({
         name: req.validatedUser.name,
+        //TODO use bcrypt to hash email
         email: req.validatedUser.email,
         password: req.validatedUser.password
       });
@@ -48,41 +85,17 @@ const userController = (User) => {
           return res.status(500).send({ message: err.message });
         }
 
-        // Create a verification token for this user
-        const verificationToken = new VerificationToken({
-          _userId: user._id,
-          token: crypto.randomBytes(16).toString('hex')
-        });
-
-        // Save the verification token
-        verificationToken.save(function (err) {
-          if (err) { return res.status(500).send({ message: err.message }); }
-
-          const transporter = nodemailer.createTransport({
-            host: config.nodeMailerOptions.host,
-            port: config.nodeMailerOptions.port,
-            secure: config.nodeMailerOptions.secure,
-            auth: {
-              user: config.nodeMailerOptions.auth.user,
-              pass: config.nodeMailerOptions.auth.pass
-            }
-          });
-
-          const mailOptions = {
-            from: config.verificationEmailOptions.from,
-            to: user.email,
-            subject: config.verificationEmailOptions.subject,
-            text: config.verificationEmailOptions.emailBody(req.headers.host, verificationToken.token)
-          };
-
-          transporter.sendMail(mailOptions, function (err) {
-            if (err) {
-              return res.status(500).send({ message: err.message });
-            }
-            res.status(200).send(`A verification email has been sent to ${user.email}.`);
-          });
-        });
+        sendVerificationEmail(req, res, user);
       });
+    });
+  });
+
+  const postResend = ((req, res) => {
+    User.findOne({ email: req.validatedUser.email }, function (err, user) {
+      if (!user) return res.status(400).send({ message: 'We were unable to find a user with that email.' });
+      if (user.isVerified) return res.status(400).send({ message: 'This account has already been verified. Please log in.' });
+
+      sendVerificationEmail(req, res, user);
     });
   });
 
@@ -106,35 +119,34 @@ const userController = (User) => {
     });
   });
 
-  // const postResend = ((req, res) => {});
+  // const setup = ((req, res) => {
+  //   // create a sample user
+  //   const saltRounds = 10;
+  //   const userProvidedPassword = 'abc123';
+  //   bcrypt.hash(userProvidedPassword, saltRounds, function (err, hash) {
+  //     //TODO use async for better peformance
+  //     var testUser = new User({
+  //       name: 'Test User',
+  //       email: 'test@test.com',
+  //       password: hash,
+  //       admin: true
+  //     });
 
-  const setup = ((req, res) => {
-    // create a sample user
-    const saltRounds = 10;
-    const userProvidedPassword = 'abc123';
-    bcrypt.hash(userProvidedPassword, saltRounds, function (err, hash) {
-      //TODO use async for better peformance
-      var testUser = new User({
-        name: 'Test User',
-        email: 'test@test.com',
-        password: hash,
-        admin: true
-      });
+  //     // save the sample user
+  //     testUser.save(function (err) {
+  //       if (err) throw err;
 
-      // save the sample user
-      testUser.save(function (err) {
-        if (err) throw err;
-
-        console.log('User saved successfully');
-        res.json({ success: true });
-      });
-    });
-  });
+  //       console.log('User saved successfully');
+  //       res.json({ success: true });
+  //     });
+  //   });
+  // });
 
   return {
     getUsers: getUsers,
-    setup: setup,
+    //setup: setup,
     postSignup: postSignup,
+    postResend: postResend,
     postConfirmation: postConfirmation
   };
 };

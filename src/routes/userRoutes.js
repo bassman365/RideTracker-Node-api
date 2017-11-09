@@ -8,6 +8,7 @@ const middleware = require('../common/middleware');
 
 const routes = function () {
   let userRouter = express.Router();
+
   userRouter.use('/signup', [
     sanitize('name')
       .trim(),
@@ -36,6 +37,25 @@ const routes = function () {
     next();
   });
 
+  userRouter.use('/resend', [
+    sanitize('email')
+      .trim()
+      .normalizeEmail({ remove_dots: false }),
+    check('email')
+      .not().isEmpty()
+      .isEmail()
+      .withMessage('Email is required and must be a valid email')
+  ], (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.mapped() });
+    }
+
+    const validatedUser = matchedData(req);
+    req.validatedUser = validatedUser;
+    next();
+  });
+
   userRouter.use('/confirmation/:verificationToken', [
     check('verificationToken')
       .not().isEmpty()
@@ -52,8 +72,8 @@ const routes = function () {
     next();
   });
 
-  userRouter.route('/setup')
-    .get(userController.setup);
+  // userRouter.route('/setup')
+  //   .get(userController.setup);
 
   userRouter.route('/signup')
     .post(userController.postSignup);
@@ -61,8 +81,8 @@ const routes = function () {
   userRouter.route('/confirmation/:verificationToken')
     .post(userController.postConfirmation);
 
-  // userRouter.route('/resend')
-  //   .post(userController.postResend);
+  userRouter.route('/resend')
+    .post(userController.postResend);
 
   userRouter.route('/')
     .get(userController.getUsers);
