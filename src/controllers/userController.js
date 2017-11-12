@@ -68,24 +68,27 @@ const userController = (User) => {
   });
 
   const postSignup = ((req, res) => {
-    User.findOne({ email: req.validatedUser.email }, function (err, user) {
+    User.findOne({ email: req.validatedUser.email }, (err, user) => {
 
       // Make sure user doesn't already exist
       if (user) return res.status(400).send({ message: messages.USER_EMAIL_IN_USE });
 
-      user = new User({
-        name: req.validatedUser.name,
-        //TODO use bcrypt to hash email
-        email: req.validatedUser.email,
-        password: req.validatedUser.password
-      });
+      bcrypt.hash(req.validatedUser.password, config.saltRounds).then((hashedPassword) => {
+        user = new User({
+          name: req.validatedUser.name,
+          email: req.validatedUser.email,
+          password: hashedPassword
+        });
 
-      user.save(function (err) {
-        if (err) {
-          return res.status(500).send({ message: err.message });
-        }
-
-        sendVerificationEmail(req, res, user);
+        user.save((err) => {
+          if (err) {
+            return res.status(500).send({ message: err.message });
+          }
+          sendVerificationEmail(req, res, user);
+        });
+      }).catch((resultErr) => {
+        console.log(resultErr);
+        //TODO handle error
       });
     });
   });
@@ -119,32 +122,8 @@ const userController = (User) => {
     });
   });
 
-  // const setup = ((req, res) => {
-  //   // create a sample user
-  //   const saltRounds = 10;
-  //   const userProvidedPassword = 'abc123';
-  //   bcrypt.hash(userProvidedPassword, saltRounds, function (err, hash) {
-  //     //TODO use async for better peformance
-  //     var testUser = new User({
-  //       name: 'Test User',
-  //       email: 'test@test.com',
-  //       password: hash,
-  //       admin: true
-  //     });
-
-  //     // save the sample user
-  //     testUser.save(function (err) {
-  //       if (err) throw err;
-
-  //       console.log('User saved successfully');
-  //       res.json({ success: true });
-  //     });
-  //   });
-  // });
-
   return {
     getUsers: getUsers,
-    //setup: setup,
     postSignup: postSignup,
     postResend: postResend,
     postConfirmation: postConfirmation
