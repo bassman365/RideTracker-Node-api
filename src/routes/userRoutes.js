@@ -4,27 +4,22 @@ const User = require('../models/userModel');
 const userController = require('../controllers/userController')(User);
 const { check, validationResult } = require('express-validator/check');
 const { matchedData, sanitize } = require('express-validator/filter');
-const middleware = require('../common/middleware');
+// const middleware = require('../common/middleware');
 
 const routes = function () {
   let userRouter = express.Router();
 
   userRouter.use('/signup', [
-    sanitize('name')
-      .trim(),
     sanitize('email')
       .trim()
       .normalizeEmail({ remove_dots: false }),
-    check('name')
-      .not().isEmpty()
-      .withMessage('Name is required'),
     check('email')
       .not().isEmpty()
       .isEmail()
       .withMessage('Email is required and must be a valid email'),
     check('password')
       .not().isEmpty()
-      .matches('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})')
+      .matches('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})') //eslint-disable-line  no-useless-escape
       .withMessage('passwords must be at least 8 characters and contain at least 1 from each of the following: lowercase letters, uppercase letters, numeric values and special characters')
   ], (req, res, next) => {
     const errors = validationResult(req);
@@ -71,9 +66,6 @@ const routes = function () {
     req.verificationToken = validatedVerificationToken.verificationToken;
     next();
   });
-
-  // userRouter.route('/setup')
-  //   .get(userController.setup);
 
   userRouter.route('/signup')
     .post(userController.postSignup);

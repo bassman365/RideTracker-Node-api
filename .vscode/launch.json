@@ -5,7 +5,7 @@
       "name": "node",
       "type": "node",
       "request": "attach",
-      "port":5858,
+      "port":9229,
       "address": "localhost",
       "restart": true,
       "sourceMaps": false,

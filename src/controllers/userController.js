@@ -9,13 +9,18 @@ const config = require('../config');
 
 const userController = (User) => {
   const sendVerificationEmail = ((req, res, user) => {
-    // Create a verification token for this user
+    let token = crypto.randomBytes(16).toString('hex');
+
+    if (req.body.isMobile) {
+      token = crypto.randomBytes(6).toString('base64');
+    }
+
     const verificationToken = new VerificationToken({
       _userId: user._id,
-      token: crypto.randomBytes(16).toString('hex')
+      token: token
     });
 
-    // Save the verification token
+    //TODO log error return generic message
     verificationToken.save(function (err) {
       if (err) { return res.status(500).send({ message: err.message }); }
 
@@ -29,18 +34,22 @@ const userController = (User) => {
         }
       });
 
+      let body = config.verificationEmailOptions.emailBody(req.headers.host, verificationToken.token);
+      if (req.isMobile) {
+        body = config.verificationEmailOptions.emailBody(verificationToken);
+      }
       const mailOptions = {
         from: config.verificationEmailOptions.from,
         to: user.email,
         subject: config.verificationEmailOptions.subject,
-        text: config.verificationEmailOptions.emailBody(req.headers.host, verificationToken.token)
+        text: body
       };
 
       transporter.sendMail(mailOptions, function (err) {
         if (err) {
           return res.status(500).send({ message: err.message });
         }
-        res.status(200).send(`A verification email has been sent to ${user.email}.`);
+        res.status(200).send({message: `A verification email has been sent to ${user.email}.`});
       });
     });
   });
@@ -82,6 +91,7 @@ const userController = (User) => {
 
         user.save((err) => {
           if (err) {
+            //TODO log error return generic message
             return res.status(500).send({ message: err.message });
           }
           sendVerificationEmail(req, res, user);
@@ -116,7 +126,7 @@ const userController = (User) => {
         user.isVerified = true;
         user.save(function (err) {
           if (err) { return res.status(500).send({ message: err.message }); }
-          res.status(200).send('The account has been verified. Please log in.');
+          res.status(200).send({message: messages.VERIFICATION_SUCCESSFUL});
         });
       });
     });

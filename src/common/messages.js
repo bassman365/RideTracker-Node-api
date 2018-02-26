@@ -4,6 +4,7 @@ const PROGRAM_REQUIRED = 'program is required';
 const USER_ID_REQUIRED = 'userId is required';
 const USER_EMAIL_IN_USE = 'The email address you have entered is already associated with another account.';
 const VERIFICATION_TOKEN_NOT_FOUND = 'We were unable to find a valid token. Your token may have expired.';
+const VERIFICATION_SUCCESSFUL = 'The account has been verified. Please log in.';
 
 class Messages {
   static get API_WELCOME() {
@@ -24,6 +25,10 @@ class Messages {
 
   static get VERIFICATION_TOKEN_NOT_FOUND() {
     return VERIFICATION_TOKEN_NOT_FOUND;
+  }
+
+  static get VERIFICATION_SUCCESSFUL() {
+    return VERIFICATION_SUCCESSFUL;
   }
 }
 
