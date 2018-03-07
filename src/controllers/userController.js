@@ -35,8 +35,8 @@ const userController = (User) => {
       });
 
       let body = config.verificationEmailOptions.emailBody(req.headers.host, verificationToken.token);
-      if (req.isMobile) {
-        body = config.verificationEmailOptions.emailBody(verificationToken);
+      if (req.body.isMobile) {
+        body = config.verificationEmailOptions.mobileEmailBody(verificationToken.token);
       }
       const mailOptions = {
         from: config.verificationEmailOptions.from,
@@ -47,6 +47,7 @@ const userController = (User) => {
 
       transporter.sendMail(mailOptions, function (err) {
         if (err) {
+          //TODO log error and return generic response
           return res.status(500).send({ message: err.message });
         }
         res.status(200).send({message: `A verification email has been sent to ${user.email}.`});
@@ -125,6 +126,7 @@ const userController = (User) => {
         // Verify and save the user
         user.isVerified = true;
         user.save(function (err) {
+          //TODO log error return generic message
           if (err) { return res.status(500).send({ message: err.message }); }
           res.status(200).send({message: messages.VERIFICATION_SUCCESSFUL});
         });

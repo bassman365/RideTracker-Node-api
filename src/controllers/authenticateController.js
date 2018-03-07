@@ -45,7 +45,7 @@ const authController = (User) => {
             // return the information including token as JSON
             res.json({
               success: true,
-              message: 'Enjoy your token!',
+              message: 'Sign In Successful',
               token: token
             });
           }

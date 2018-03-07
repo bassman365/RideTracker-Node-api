@@ -3,8 +3,8 @@ const API_WELCOME = 'Welcome to my Ride Api!';
 const PROGRAM_REQUIRED = 'program is required';
 const USER_ID_REQUIRED = 'userId is required';
 const USER_EMAIL_IN_USE = 'The email address you have entered is already associated with another account.';
-const VERIFICATION_TOKEN_NOT_FOUND = 'We were unable to find a valid token. Your token may have expired.';
-const VERIFICATION_SUCCESSFUL = 'The account has been verified. Please log in.';
+const VERIFICATION_TOKEN_NOT_FOUND = 'Not a valid verification code. Your code may have expired.  Please ensure you have entered the code exactly as it appears in the email.';
+const VERIFICATION_SUCCESSFUL = 'Your account has been verified! Please log in.';
 
 class Messages {
   static get API_WELCOME() {
