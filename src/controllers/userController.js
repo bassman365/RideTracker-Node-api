@@ -13,6 +13,9 @@ const userController = (User) => {
 
     if (req.body.isMobile) {
       token = crypto.randomBytes(6).toString('base64');
+      //remove characters that messup the stuff
+      token = token.replace(/\//g, crypto.randomBytes(1).toString('hex'));
+      token = token.replace(/\+/g, crypto.randomBytes(1).toString('hex'));
     }
 
     const verificationToken = new VerificationToken({

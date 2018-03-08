@@ -7,7 +7,7 @@ const authController = (User) => {
   const post = ((req, res) => {
 
     User.findOne({
-      email: req.body.email
+      email: req.validatedUser.email
     }, function (err, user) {
 
       if (err) throw err;
@@ -16,7 +16,7 @@ const authController = (User) => {
         res.status(401);
         res.json({ success: false, message: 'Authentication failed. Invalid email or password.' });
       } else if (user) {
-        bcrypt.compare(req.body.password, user.password).then(function (result) {
+        bcrypt.compare(req.validatedUser.password, user.password).then(function (result) {
           const passwordsMatch = result;
           if (!passwordsMatch) {
             res.status(401);
@@ -35,8 +35,8 @@ const authController = (User) => {
             }
 
             const payload = {
-              isAdmin: user.admin,
-              name: user.name
+              id: user.id,
+              roles: user.roles,
             };
             const token = jwt.sign(payload, config.secret, {
               expiresIn: '24h'
