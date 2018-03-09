@@ -4,9 +4,15 @@ const User = require('../models/userModel');
 const authController = require('../controllers/authenticateController')(User);
 const { check, validationResult } = require('express-validator/check');
 const { matchedData, sanitize } = require('express-validator/filter');
+const middleware =  require('../common/middleware');
 
 const routes = function () {
   let authRouter = express.Router();
+
+  authRouter.use('/renew', middleware.tokenIsValid);
+
+  authRouter.route('/renew')
+    .post(authController.postRenew);
 
   authRouter.use('/', [
     sanitize('email')
@@ -27,7 +33,6 @@ const routes = function () {
     req.validatedUser = validatedUser;
     next();
   });
-
 
   authRouter.route('/')
     .post(authController.post);

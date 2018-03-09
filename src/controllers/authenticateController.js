@@ -42,7 +42,6 @@ const authController = (User) => {
               expiresIn: '24h'
             });
 
-            // return the information including token as JSON
             res.json({
               success: true,
               message: 'Sign In Successful',
@@ -57,9 +56,44 @@ const authController = (User) => {
     });
   });
 
+  const postRenew = ((req, res) => {
+    User.findById(req.decoded.id, (err, user) => {
+      if (err) throw err;
+
+      if (!user.roles.includes('renewable')) {
+        return res.status(401).send({
+          success: false,
+          message: 'renewal failed'
+        });
+      }
+
+      const tempPayload = Object.assign({}, req.decoded);
+      delete tempPayload.iat;
+      delete tempPayload.exp;
+      delete tempPayload.nbf;
+      delete tempPayload.jti;
+      delete tempPayload.roles;
+
+      const payload = Object.assign({}, tempPayload, {roles: user.roles});
+
+      const token = jwt.sign(payload, config.secret, {
+        expiresIn: '4d'
+      });
+
+      res.status(200).send({
+        success: true,
+        message: 'Renew Successful',
+        token: token
+      });
+
+    });
+  });
+
   return {
     post: post,
+    postRenew: postRenew
   };
+
 };
 
 module.exports = authController;
