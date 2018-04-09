@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const rideModel = new Schema({
   userId: { type: String },
   program: { type: String },
+  date: {type: Date},
   duration: { type: Number },
   weight: { type: Number },
   level: { type: Number },

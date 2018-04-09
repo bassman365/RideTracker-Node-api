@@ -58,28 +58,6 @@ const userController = (User) => {
     });
   });
 
-  const getUsers = ((req, res) => {
-    const query = {};
-    // if (req.query.program) {
-    //   query.program = req.query.program;
-    // }
-    User.find(query, (err, users) => {
-      if (err) {
-        res.status(500);
-        res.send(err);
-      } else {
-        let returnUsers = [];
-        users.forEach((element) => {
-          let newUser = element.toJSON();
-          newUser.links = {};
-          //newUser.links.self = 'http://' + req.headers.host + '/api/rides/' + newUser._id;
-          returnUsers.push(newUser);
-        });
-        res.json(returnUsers);
-      }
-    });
-  });
-
   const postSignup = ((req, res) => {
     User.findOne({ email: req.validatedUser.email }, (err, user) => {
 
@@ -138,7 +116,7 @@ const userController = (User) => {
   });
 
   return {
-    getUsers: getUsers,
+    // getUsers: getUsers,
     postSignup: postSignup,
     postResend: postResend,
     postConfirmation: postConfirmation

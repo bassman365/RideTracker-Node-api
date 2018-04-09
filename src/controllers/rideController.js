@@ -5,6 +5,7 @@ const validatorHelper = require('../validators/validatorHelper');
 const rideController = (Ride) => {
   const post = ((req, res) => {
     let ride = new Ride(req.body);
+    ride.userId = req.decoded.id;
     const errors = validators.validatePostRide(req.body);
     if (errors.length > 0) {
       res.status(400);
@@ -19,6 +20,7 @@ const rideController = (Ride) => {
 
   const getRides = ((req, res) => {
     const query = {};
+    query.userId = req.decoded.id;
     if (req.query.program) {
       query.program = req.query.program;
     }
@@ -51,6 +53,7 @@ const rideController = (Ride) => {
   const putRide = ((req, res) => {
     req.ride.userId = req.body.userId;
     req.ride.program = req.body.program;
+    req.ride.date = req.body.date;
     req.ride.duration = req.body.duration;
     req.ride.weight = req.body.weight;
     req.ride.level = req.body.level;

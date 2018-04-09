@@ -16,7 +16,7 @@ const authController = (User) => {
         res.status(401);
         res.json({ success: false, message: 'Authentication failed. Invalid email or password.' });
       } else if (user) {
-        bcrypt.compare(req.validatedUser.password, user.password).then(function (result) {
+        bcrypt.compare(req.validatedUser.password, user.password).then((result) => {
           const passwordsMatch = result;
           if (!passwordsMatch) {
             res.status(401);
@@ -38,6 +38,7 @@ const authController = (User) => {
               id: user.id,
               roles: user.roles,
             };
+
             const token = jwt.sign(payload, config.secret, {
               expiresIn: '24h'
             });
@@ -48,7 +49,7 @@ const authController = (User) => {
               token: token
             });
           }
-        }).catch(function (resultErr) {
+        }).catch((resultErr) => {
           console.log(resultErr);
           //TODO handle error
         });

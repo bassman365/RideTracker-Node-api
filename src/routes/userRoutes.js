@@ -76,9 +76,6 @@ const routes = function () {
   userRouter.route('/resend')
     .post(userController.postResend);
 
-  userRouter.route('/')
-    .get(userController.getUsers);
-
   return userRouter;
 };
 
