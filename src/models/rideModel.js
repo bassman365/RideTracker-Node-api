@@ -6,7 +6,7 @@ const rideModel = new Schema({
   userId: { type: String },
   program: { type: String },
   date: {type: Date},
-  duration: { type: Number },
+  durationSeconds: { type: Number },
   weight: { type: Number },
   level: { type: Number },
   distance: { type: Number },

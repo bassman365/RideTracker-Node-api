@@ -4,7 +4,6 @@ const User = require('../models/userModel');
 const userController = require('../controllers/userController')(User);
 const { check, validationResult } = require('express-validator/check');
 const { matchedData, sanitize } = require('express-validator/filter');
-// const middleware = require('../common/middleware');
 
 const routes = function () {
   let userRouter = express.Router();

@@ -35,7 +35,7 @@ describe('Ride Controller Tests:', function () {
         body: {
           userId: 123,
           program: 'Test Program',
-          duration: 1800
+          durationSeconds: 1800
         }
       };
 

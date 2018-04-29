@@ -8,9 +8,9 @@ function validatePostRide(ride) {
     errors.push(new validationHelper.ValidationError('error', Messages.PROGRAM_REQUIRED));
   }
 
-  if (ride.userId === undefined || ride.userId === '') {
-    errors.push(new validationHelper.ValidationError('error', Messages.USER_ID_REQUIRED));
-  }
+  // if (ride.userId === undefined || ride.userId === '') {
+  //   errors.push(new validationHelper.ValidationError('error', Messages.USER_ID_REQUIRED));
+  // }
 
   return errors;
 }

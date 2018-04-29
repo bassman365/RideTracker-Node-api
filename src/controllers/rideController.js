@@ -24,21 +24,29 @@ const rideController = (Ride) => {
     if (req.query.program) {
       query.program = req.query.program;
     }
-    Ride.find(query, (err, rides) => {
-      if (err) {
-        res.status(500);
-        res.send(err);
-      } else {
-        let returnRides = [];
-        rides.forEach((ride) => {
-          let newRide = ride.toJSON();
-          newRide.links = {};
-          newRide.links.self = 'http://' + req.headers.host + '/api/rides/' + newRide._id;
-          returnRides.push(newRide);
-        });
-        res.json(returnRides);
-      }
-    });
+
+    Ride.find(query)
+      .sort({date: 'desc'})
+      .exec((err, rides) => {
+        if (err) {
+          res.status(500);
+          res.send(err);
+        } else {
+          let returnRides = [];
+          rides.forEach((ride) => {
+            let newRide = ride.toJSON();
+            newRide.links = {};
+            newRide.links.self = 'http://' + req.headers.host + '/api/rides/' + newRide._id;
+            returnRides.push(newRide);
+          });
+
+          res.status(200).send({
+            success: true,
+            message: 'Such great rides',
+            rides: returnRides
+          });
+        }
+      });
   });
 
   const getRide = ((req, res) => {
@@ -51,10 +59,9 @@ const rideController = (Ride) => {
   });
 
   const putRide = ((req, res) => {
-    req.ride.userId = req.body.userId;
     req.ride.program = req.body.program;
     req.ride.date = req.body.date;
-    req.ride.duration = req.body.duration;
+    req.ride.durationSeconds = req.body.durationSeconds;
     req.ride.weight = req.body.weight;
     req.ride.level = req.body.level;
     req.ride.distance = req.body.distance;
