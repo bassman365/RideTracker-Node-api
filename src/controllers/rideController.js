@@ -1,20 +1,15 @@
 'use strict';
 const validators = require('../validators/rideValidator');
-
-const getErrorList = function (errors) {
-  const returnMessage = errors.map((error) => {
-    return error.message;
-  });
-  return returnMessage.join(', ');
-};
+const validatorHelper = require('../validators/validatorHelper');
 
 const rideController = (Ride) => {
   const post = ((req, res) => {
     let ride = new Ride(req.body);
+    ride.userId = req.decoded.id;
     const errors = validators.validatePostRide(req.body);
     if (errors.length > 0) {
       res.status(400);
-      res.send(getErrorList(errors));
+      res.send(validatorHelper.getErrorList(errors));
     } else {
       ride.save();
       console.log(ride);
@@ -25,24 +20,33 @@ const rideController = (Ride) => {
 
   const getRides = ((req, res) => {
     const query = {};
+    query.userId = req.decoded.id;
     if (req.query.program) {
       query.program = req.query.program;
     }
-    Ride.find(query, (err, rides) => {
-      if (err) {
-        res.status(500);
-        res.send(err);
-      } else {
-        let returnRides = [];
-        rides.forEach((element, index, array) => {
-          let newRide = element.toJSON();
-          newRide.links = {};
-          newRide.links.self = 'http://' + req.headers.host + '/api/rides/' + newRide._id;
-          returnRides.push(newRide);
-        });
-        res.json(returnRides);
-      }
-    });
+
+    Ride.find(query)
+      .sort({date: 'desc'})
+      .exec((err, rides) => {
+        if (err) {
+          res.status(500);
+          res.send(err);
+        } else {
+          let returnRides = [];
+          rides.forEach((ride) => {
+            let newRide = ride.toJSON();
+            newRide.links = {};
+            newRide.links.self = 'http://' + req.headers.host + '/api/rides/' + newRide._id;
+            returnRides.push(newRide);
+          });
+
+          res.status(200).send({
+            success: true,
+            message: 'Such great rides',
+            rides: returnRides
+          });
+        }
+      });
   });
 
   const getRide = ((req, res) => {
@@ -55,9 +59,9 @@ const rideController = (Ride) => {
   });
 
   const putRide = ((req, res) => {
-    req.ride.userId = req.body.userId;
     req.ride.program = req.body.program;
-    req.ride.duration = req.body.duration;
+    req.ride.date = req.body.date;
+    req.ride.durationSeconds = req.body.durationSeconds;
     req.ride.weight = req.body.weight;
     req.ride.level = req.body.level;
     req.ride.distance = req.body.distance;

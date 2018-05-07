@@ -60,3 +60,5 @@ typings/
 
 *.map
 dist/
+src/config.js
+.vs/slnx.sqlite

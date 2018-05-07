@@ -5,11 +5,12 @@ const rideController = require('../controllers/rideController')(Ride);
 
 const routes = function () {
   let rideRouter = express.Router();
+
   rideRouter.route('/')
     .post(rideController.post)
     .get(rideController.getRides);
 
-  //middleware to validate rideId exists
+  // id middleware to validate rideId exists
   rideRouter.use('/:rideId', function (req, res, next) {
     Ride.findById(req.params.rideId, (err, ride) => {
       if (err) {

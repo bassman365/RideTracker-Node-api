@@ -2,6 +2,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const validators = require('../validators/rideValidator');
+const validatorHelper = require('../validators/validatorHelper');
 
 describe('Ride Controller Tests:', function () {
   describe('Post failure', function () {
@@ -17,8 +18,8 @@ describe('Ride Controller Tests:', function () {
         send: sinon.spy()
       };
 
-      let validatorStub = sinon.stub(validators, "validatePostRide");
-      validatorStub.onFirstCall().returns([new validators.RideError('error', 'test error')]);
+      let validatorStub = sinon.stub(validators, 'validatePostRide');
+      validatorStub.onFirstCall().returns([new validatorHelper.ValidationError('error', 'test error')]);
       const rideController = require('../controllers/rideController')(Ride);
       rideController.post(req, res);
       res.status.calledWith(400).should.equal(true, 'Bad Request ' + res.status.args[0][0]);
@@ -34,7 +35,7 @@ describe('Ride Controller Tests:', function () {
         body: {
           userId: 123,
           program: 'Test Program',
-          duration: 1800
+          durationSeconds: 1800
         }
       };
 
