@@ -12,10 +12,13 @@ const middleware =              require('./common/middleware');
 const config =                  require('./config');
 mongoose.Promise = global.Promise;
 
+process.env.NODE_ENV = config.environment;
+
 //the ride db will be created if it does not currently exist
 mongoose.connect(config.database, { useMongoClient: true });
 let app = express();
 const port = process.env.port || 3000;
+
 let rideRouter = rideRoutes();
 let userRouter = userRoutes();
 let authRouter = authRoutes();
@@ -23,7 +26,11 @@ let programCollectionRouter = programCollectionRoutes();
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-app.use(morgan('dev'));
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
 app.use('/api/authenticate', authRouter);
 app.use('/api/users', userRouter);
 

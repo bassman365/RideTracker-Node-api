@@ -58,6 +58,32 @@ const userController = (User) => {
     });
   });
 
+  const getUsers = ((req, res) => {
+    if (req.decoded.roles && req.decoded.roles.includes('admin')) {
+      User.find((err, users) => {
+        if (err) {
+          res.status(500);
+          res.send({ message: err.message });
+        } else {
+          let returnUsers = [];
+          users.forEach((element) => {
+            let newUser = {
+              email: element.email,
+            };
+            returnUsers.push(newUser);
+          });
+          res.status(200).send({
+            success: true,
+            message: 'all the Users!',
+            users: returnUsers
+          });
+        }
+      });
+    } else {
+      res.status(401).send();
+    }
+  });
+
   const postSignup = ((req, res) => {
     User.findOne({ email: req.validatedUser.email }, (err, user) => {
 
@@ -70,6 +96,10 @@ const userController = (User) => {
           email: req.validatedUser.email,
           password: hashedPassword
         });
+
+        if (config.admins.includes(user.email)) {
+          user.roles = ['admin'];
+        }
 
         user.save((err) => {
           if (err) {
@@ -116,7 +146,7 @@ const userController = (User) => {
   });
 
   return {
-    // getUsers: getUsers,
+    getUsers: getUsers,
     postSignup: postSignup,
     postResend: postResend,
     postConfirmation: postConfirmation

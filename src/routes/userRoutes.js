@@ -4,6 +4,8 @@ const User = require('../models/userModel');
 const userController = require('../controllers/userController')(User);
 const { check, validationResult } = require('express-validator/check');
 const { matchedData, sanitize } = require('express-validator/filter');
+const middleware = require('../common/middleware');
+const config = require('../config');
 
 const routes = function () {
   let userRouter = express.Router();
@@ -15,7 +17,14 @@ const routes = function () {
     check('email')
       .not().isEmpty()
       .isEmail()
-      .withMessage('Email is required and must be a valid email'),
+      .withMessage('Email is required and must be a valid email')
+      .custom(value => {
+        if(!config.approvedEmails.includes(value)){
+          throw new Error('this email is not approved');
+        } else{
+          return true;
+        }
+      }),
     check('password')
       .not().isEmpty()
       .matches('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})') //eslint-disable-line  no-useless-escape
@@ -74,6 +83,10 @@ const routes = function () {
 
   userRouter.route('/resend')
     .post(userController.postResend);
+
+  userRouter.get('/', middleware.tokenIsValid);
+  userRouter.route('/')
+    .get(userController.getUsers);
 
   return userRouter;
 };

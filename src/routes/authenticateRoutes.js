@@ -27,7 +27,8 @@ const routes = function () {
   ], (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.mapped() });
+      const messages = errors.array().map(x => x.msg);
+      return res.status(422).json({ success: false, message: messages.join(', ') });
     }
     const validatedUser = matchedData(req);
     req.validatedUser = validatedUser;
