@@ -15,6 +15,9 @@ const authController = (User) => {
       if (!user) {
         res.status(401);
         res.json({ success: false, message: 'Authentication failed. Invalid email or password.' });
+      } else if (!user.isVerified) {
+        res.status(401);
+        res.json({success: false, message: 'Authentication failed. User not verified'});
       } else if (user) {
         bcrypt.compare(req.validatedUser.password, user.password).then((result) => {
           const passwordsMatch = result;

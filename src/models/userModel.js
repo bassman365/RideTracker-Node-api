@@ -13,7 +13,8 @@ const userModel = new Schema({
   // admin: {type: Boolean}
 },
 {
-  timestamps: true
+  timestamps: true,
+  usePushEach: true
 });
 
 module.exports = mongoose.model('User', userModel);

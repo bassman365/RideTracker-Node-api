@@ -84,9 +84,29 @@ const routes = function () {
   userRouter.route('/resend')
     .post(userController.postResend);
 
-  userRouter.get('/', middleware.tokenIsValid);
+  userRouter.use('/', middleware.tokenIsValid);
   userRouter.route('/')
     .get(userController.getUsers);
+
+  userRouter.use('/:userId', function (req, res, next) {
+    if (req.decoded.roles && req.decoded.roles.includes('admin')) {
+      User.findById(req.params.userId, (err, user) => {
+        if (err) {
+          res.status(500).send(err);
+        } else if (user) {
+          req.user = user;
+          next();
+        } else {
+          res.status(404).send('No User Found');
+        }
+      });
+    } else {
+      res.status(401).send('Nope');
+    }
+  });
+
+  userRouter.route('/:userId')
+    .patch(userController.patchUserRole);
 
   return userRouter;
 };
