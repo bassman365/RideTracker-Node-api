@@ -13,7 +13,7 @@ const userController = (User) => {
 
     if (req.body.isMobile) {
       token = crypto.randomBytes(6).toString('base64');
-      //remove characters that messup the stuff
+      //remove characters that mess up the stuff
       token = token.replace(/\//g, crypto.randomBytes(1).toString('hex'));
       token = token.replace(/\+/g, crypto.randomBytes(1).toString('hex'));
     }
@@ -69,6 +69,7 @@ const userController = (User) => {
           users.forEach((element) => {
             let newUser = {
               email: element.email,
+              id: element.id
             };
             returnUsers.push(newUser);
           });
@@ -81,6 +82,26 @@ const userController = (User) => {
       });
     } else {
       res.status(401).send();
+    }
+  });
+
+  const patchUserRole = ((req, res) => {
+    if (req.body.roles && req.body.roles.length > 0) {
+      if(req.user.roles && req.user.roles.length > 0) {
+        const newRoles = req.body.roles.filter(x => req.user.roles.indexOf(x) < 0 && x !== 'admin');
+        req.user.roles.push(...newRoles);
+      } else {
+        req.user.roles = req.body.roles;
+      }
+      req.user.save((err) => {
+        if (err) {
+          res.status(500).send({success: false});
+        } else {
+          res.json(req.user.roles);
+        }
+      });
+    } else {
+      res.status(400).send({success: false});
     }
   });
 
@@ -149,7 +170,8 @@ const userController = (User) => {
     getUsers: getUsers,
     postSignup: postSignup,
     postResend: postResend,
-    postConfirmation: postConfirmation
+    postConfirmation: postConfirmation,
+    patchUserRole: patchUserRole
   };
 };
 
