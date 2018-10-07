@@ -7,6 +7,16 @@ const Token = require('../models/verificationToken');
 const messages = require('../common/messages');
 const config = require('../config');
 
+const emailTransporter = nodemailer.createTransport({
+  host: config.nodeMailerOptions.host,
+  port: config.nodeMailerOptions.port,
+  secure: config.nodeMailerOptions.secure,
+  auth: {
+    user: config.nodeMailerOptions.auth.user,
+    pass: config.nodeMailerOptions.auth.pass
+  }
+});
+
 const userController = (User) => {
   const sendVerificationEmail = ((req, res, user) => {
     let token = crypto.randomBytes(16).toString('hex');
@@ -27,20 +37,11 @@ const userController = (User) => {
     verificationToken.save(function (err) {
       if (err) { return res.status(500).send({ message: err.message }); }
 
-      const transporter = nodemailer.createTransport({
-        host: config.nodeMailerOptions.host,
-        port: config.nodeMailerOptions.port,
-        secure: config.nodeMailerOptions.secure,
-        auth: {
-          user: config.nodeMailerOptions.auth.user,
-          pass: config.nodeMailerOptions.auth.pass
-        }
-      });
-
       let body = config.verificationEmailOptions.emailBody(req.headers.host, verificationToken.token);
       if (req.body.isMobile) {
         body = config.verificationEmailOptions.mobileEmailBody(verificationToken.token);
       }
+
       const mailOptions = {
         from: config.verificationEmailOptions.from,
         to: user.email,
@@ -48,7 +49,7 @@ const userController = (User) => {
         text: body
       };
 
-      transporter.sendMail(mailOptions, function (err) {
+      emailTransporter.sendMail(mailOptions, function (err) {
         if (err) {
           //TODO log error and return generic response
           return res.status(500).send({ message: err.message });
@@ -56,6 +57,37 @@ const userController = (User) => {
         res.status(200).send({message: `A verification email has been sent to ${user.email}.`});
       });
     });
+  });
+
+  const sendForgotEmail = ((req, res, user) => {
+    let token = crypto.randomBytes(24).toString('hex');
+    const verificationToken = new VerificationToken({
+      _userId: user._id,
+      token: token
+    });
+
+    //TODO log error return generic message
+    verificationToken.save(function (err) {
+      if (err) { return res.status(500).send({ message: err.message }); }
+
+      const body = config.forgotEmailOptions.emailBody(req.headers.host, verificationToken.token);
+
+      const mailOptions = {
+        from: config.forgotEmailOptions.from,
+        to: user.email,
+        subject: config.forgotEmailOptions.subject,
+        text: body
+      };
+
+      emailTransporter.sendMail(mailOptions, function (err) {
+        if (err) {
+          //TODO log error and return generic response
+          return res.status(500).send({ message: err.message });
+        }
+        res.status(200).send({message: `A password reset email has been sent to ${user.email}.`});
+      });
+    });
+
   });
 
   const getUsers = ((req, res) => {
@@ -145,6 +177,49 @@ const userController = (User) => {
     });
   });
 
+  const postForgotPasswordRequest = ((req, res) => {
+    User.findOne({ email: req.validatedUser.email }, function (err, user) {
+      if (!user) {
+        // TODO handle new account email case here
+      } else {
+        sendForgotEmail(req, res, user);
+      }
+    });
+  });
+
+  const postForgotPasswordReset = ((req, res) => {
+    // Find a matching token
+    Token.findOne({ token: req.verificationToken }, function (err, token) {
+      if (!token) {
+        return res
+          .status(400)
+          .send({ type: 'not-verified', message: messages.VERIFICATION_TOKEN_NOT_FOUND });
+      }
+
+      // If we found a token, find a matching user
+      User.findOne({ _id: token._userId }, function (err, user) {
+        if (!user) return res.status(400).send({ message: 'We were unable to find a user for this token.' });
+
+        bcrypt.hash(req.validatedUser.password, config.saltRounds)
+          .then((hashedPassword) => {
+            user.password = hashedPassword;
+
+            user.save((err) => {
+              if (err) {
+              //TODO log error return generic message
+                return res.status(500).send({ message: err.message });
+              } else {
+                res.status(200).send({message: messages.PASSWORD_RESET_SUCCESSFUL});
+              }
+            });
+          }).catch((resultErr) => {
+            console.log(resultErr);
+          //TODO handle error
+          });
+      });
+    });
+  });
+
   const postConfirmation = ((req, res) => {
     // Find a matching token
     Token.findOne({ token: req.verificationToken }, function (err, token) {
@@ -167,11 +242,13 @@ const userController = (User) => {
   });
 
   return {
-    getUsers: getUsers,
-    postSignup: postSignup,
-    postResend: postResend,
-    postConfirmation: postConfirmation,
-    patchUserRole: patchUserRole
+    getUsers,
+    postSignup,
+    postResend,
+    postConfirmation,
+    patchUserRole,
+    postForgotPasswordRequest,
+    postForgotPasswordReset
   };
 };
 
