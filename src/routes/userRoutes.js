@@ -75,6 +75,47 @@ const routes = function () {
     next();
   });
 
+  userRouter.use('/resetPassword/:verificationToken', [
+    check('verificationToken')
+      .not().isEmpty()
+      .withMessage('verification token not provided'),
+    sanitize('verificationToken')
+      .trim(),
+    check('password')
+      .not().isEmpty()
+      .matches('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})') //eslint-disable-line  no-useless-escape
+      .withMessage('passwords must be at least 8 characters and contain at least 1 from each of the following: lowercase letters, uppercase letters, numeric values and special characters'),
+  ], (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.mapped() });
+    }
+    const validatedVerificationToken = matchedData(req);
+    req.verificationToken = validatedVerificationToken.verificationToken;
+    const validatedUser = matchedData(req);
+    req.validatedUser = validatedUser;
+    next();
+  });
+
+  userRouter.use('/forgotPassword', [
+    sanitize('email')
+      .trim()
+      .normalizeEmail({ remove_dots: false }),
+    check('email')
+      .not().isEmpty()
+      .isEmail()
+      .withMessage('Email is required and must be a valid email')
+  ], (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.mapped() });
+    }
+
+    const validatedUser = matchedData(req);
+    req.validatedUser = validatedUser;
+    next();
+  });
+
   userRouter.route('/signup')
     .post(userController.postSignup);
 
@@ -83,6 +124,12 @@ const routes = function () {
 
   userRouter.route('/resend')
     .post(userController.postResend);
+
+  userRouter.route('/forgotPassword')
+    .post(userController.postForgotPasswordRequest);
+
+  userRouter.route('/resetPassword/:verificationToken')
+    .post(userController.postForgotPasswordReset);
 
   userRouter.use('/', middleware.tokenIsValid);
   userRouter.route('/')
